@@ -1,6 +1,0 @@
-script	/.netlify/scripts/hud?variant=public
-link	./naruto-logo.png
-link	https://fonts.googleapis.com
-link	https://fonts.gstatic.com
-link	https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700;800&display=swap
-img	./naruto-logo.png
