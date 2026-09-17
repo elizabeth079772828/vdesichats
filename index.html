@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vdesi Chat</title>
+<style>
+:root{
+  --header-h: 64px;
+  --sidebar-w: 256px;
+
+  --bg: #0b0b0f;
+  --bg-subtle: #15151b;
+  --surface: #111116;
+  --border: #292930;
+  --border-strong: #3a3a44;
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #b7b7c2;
+  --text-tertiary: #858592;
+
+  --accent: #5b6cff;
+  --accent-dark: #4451d6;
+  --accent-wash: #eef0ff;
+
+  --install-green: #01875f;
+  --install-green-dark: #016b4b;
+
+  --star: #f5a623;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.35);
+  --shadow-2: 0 1px 3px rgba(0,0,0,.45), 0 4px 12px rgba(0,0,0,.35);
+  --shadow-hover: 0 2px 8px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.4);
+
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --radius-pill: 999px;
+
+  --font: "Google Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+*{ box-sizing: border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family: var(--font);
+  color: var(--text-primary);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a{ text-decoration:none; color:inherit; }
+ul{ list-style:none; margin:0; padding:0; }
+button{ font-family:inherit; cursor:pointer; }
+svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+/* ============ TOP HEADER ============ */
+.topbar{
+  position: fixed; top:0; left:0; right:0; height: var(--header-h);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display:flex; align-items:center; justify-content: space-between;
+  padding: 0 16px; z-index: 100; gap: 16px;
+}
+.topbar-left{ display:flex; align-items:center; gap: 4px; flex: 0 0 auto; min-width: 0; }
+.icon-btn{
+  width:40px; height:40px; border:none; background:transparent; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; color: var(--text-secondary);
+  flex-shrink:0; transition: background .15s ease;
+}
+.icon-btn:hover{ background: var(--bg-subtle); }
+.brand{ display:flex; align-items:center; gap:10px; padding: 6px 8px; border-radius: var(--radius-s); min-width:0; }
+.brand:hover{ background: var(--bg-subtle); }
+.brand-name{ font-size:20px; font-weight:500; letter-spacing:-.2px; white-space:nowrap; }
+
+.topbar-center{ flex:1 1 auto; display:flex; justify-content:center; min-width:0; max-width: 720px; margin: 0 auto; }
+.search-wrap{
+  position:relative; width:100%; display:flex; align-items:center;
+  background: var(--bg-subtle); border-radius: var(--radius-pill); height:44px; padding: 0 16px;
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.search-wrap:focus-within{ background: var(--surface); box-shadow: 0 1px 6px rgba(0,0,0,.45); }
+.search-icon{ flex-shrink:0; color: var(--text-secondary); width:18px; height:18px; }
+#searchInput{ border:none; outline:none; background:transparent; font-size:15px; color: var(--text-primary); width:100%; padding: 0 10px; font-family: inherit; }
+#searchInput::placeholder{ color: var(--text-tertiary); }
+
+.topbar-right{ display:flex; align-items:center; gap:4px; flex:0 0 auto; }
+.avatar-btn{
+  width:34px; height:34px; border-radius:50%; border:none;
+  background: linear-gradient(135deg,#5b6cff,#7c3aed); color:#fff; font-size:14px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.hide-mobile{ display:flex; }
+
+/* ============ APP SHELL ============ */
+.app-shell{ display:flex; padding-top: var(--header-h); min-height:100vh; }
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  width: var(--sidebar-w); flex-shrink:0; position: fixed; top: var(--header-h); left:0; bottom:0;
+  background: var(--surface); overflow-y:auto; z-index: 90; transition: transform .25s ease, width .2s ease;
+}
+.side-nav{ padding: 8px 0 24px; }
+.side-group{ display:flex; flex-direction:column; gap:1px; padding: 0 8px; }
+.side-link{
+  display:flex; align-items:center; gap:22px; height:40px; padding: 0 20px;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0; color: var(--text-secondary);
+  font-size:14px; font-weight:500; transition: background .15s ease, color .15s ease; white-space:nowrap;
+}
+.side-link svg{ width:20px; height:20px; flex-shrink:0; }
+.side-link:hover{ background: var(--bg-subtle); }
+.side-link.active{ background: var(--accent-wash); color: var(--accent-dark); font-weight:700; }
+.side-link.active svg{ color: var(--accent-dark); }
+.side-divider{ height:1px; background: var(--border); margin: 12px 20px; }
+.side-group--footer .side-link{ font-size:13px; color: var(--text-tertiary); font-weight:400; height:36px; }
+
+/* ============ SCRIM (mobile sidebar) ============ */
+.scrim{ display:none; position:fixed; inset:0; background: rgba(32,33,36,.5); z-index: 95; }
+.scrim.show{ display:block; }
+
+/* ============ MAIN CONTENT ============ */
+.main-content{ flex:1 1 auto; margin-left: var(--sidebar-w); padding: 24px 32px 64px; min-width:0; max-width: 920px; }
+
+.breadcrumb{ font-size:13px; color: var(--text-tertiary); margin-bottom:20px; display:flex; align-items:center; gap:6px; }
+.breadcrumb span{ color: var(--border-strong); }
+
+/* ============ HERO ============ */
+.app-hero{
+  display:grid; grid-template-columns: 128px 1fr; gap:28px;
+  padding-bottom:28px; border-bottom:1px solid var(--border); margin-bottom:28px;
+}
+.hero-icon{ width:128px; height:128px; border-radius: var(--radius-l); box-shadow: var(--shadow-2); }
+.hero-info h1{ font-size:32px; font-weight:600; margin:0 0 4px; letter-spacing:-.4px; }
+.hero-dev{ font-size:15px; color: var(--accent-dark); font-weight:500; display:inline-block; margin-bottom:10px; }
+.hero-tags{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.chip-tag{ font-size:12px; font-weight:600; color: var(--text-secondary); border:1px solid var(--border-strong); border-radius: var(--radius-pill); padding:4px 12px; }
+
+.hero-stats{ display:flex; gap:0; margin-bottom:20px; max-width:440px; }
+.hero-stats .stat{ flex:1; padding-right:18px; margin-right:18px; border-right:1px solid var(--border); }
+.hero-stats .stat:last-child{ border-right:none; margin-right:0; padding-right:0; }
+.stat-value{ font-size:16px; font-weight:700; display:flex; align-items:center; gap:4px; }
+.stat-value svg{ width:14px; height:14px; fill:var(--star); stroke:none; }
+.stat-label{ font-size:12px; color: var(--text-tertiary); margin-top:2px; }
+
+.hero-cta{ display:flex; align-items:center; gap:12px; }
+.btn{ border:none; border-radius: var(--radius-pill); padding: 9px 22px; font-size:14px; font-weight:600; cursor:pointer; transition: background .15s ease, box-shadow .15s ease, transform .1s ease; }
+.btn:active{ transform: scale(.98); }
+.btn-install{ background: var(--install-green); color:#fff; }
+.btn-install:hover{ background: var(--install-green-dark); box-shadow: var(--shadow-1); }
+.btn-lg{ padding:15px 44px; font-size:17px; min-height:50px; }
+.icon-btn-outline{
+  width:44px; height:44px; border-radius:50%; border:1px solid var(--border-strong); background:var(--surface);
+  display:flex; align-items:center; justify-content:center; color:var(--text-secondary); flex-shrink:0;
+}
+.icon-btn-outline:hover{ background: var(--bg-subtle); }
+
+/* ============ SECTIONS ============ */
+.section{ margin-bottom: 36px; }
+.section h2{ font-size:18px; font-weight:600; margin:0 0 14px; letter-spacing:-.2px; }
+
+.carousel-wrap{ position:relative; }
+.carousel{ display:flex; gap:16px; overflow-x:auto; scroll-behavior:smooth; scrollbar-width:none; padding: 4px 2px 12px; }
+.carousel::-webkit-scrollbar{ display:none; }
+.shots-carousel img{ height:320px; width:auto; border-radius:14px; flex-shrink:0; box-shadow: var(--shadow-1); }
+.carousel-arrow{
+  position:absolute; top:50%; transform: translateY(-50%); width:36px; height:36px; border-radius:50%;
+  border:1px solid var(--border-strong); background: var(--surface); box-shadow: var(--shadow-1);
+  display:flex; align-items:center; justify-content:center; color: var(--text-primary); z-index:5;
+}
+.carousel-arrow:hover{ box-shadow: var(--shadow-hover); }
+.carousel-arrow.left{ left:-18px; } .carousel-arrow.right{ right:-18px; }
+.carousel-arrow svg{ width:18px; height:18px; }
+
+.about-text{ font-size:14px; line-height:1.7; color: var(--text-secondary); max-width:760px; max-height:66px; overflow:hidden; transition: max-height .25s ease; }
+.about-text.expanded{ max-height:600px; }
+.read-more-btn{ border:none; background:none; color:var(--accent-dark); font-size:13px; font-weight:700; margin-top:8px; padding:0; }
+
+.updated-label{ font-size:12px; color:var(--text-tertiary); margin:-8px 0 10px; }
+.section p.body-text{ font-size:14px; line-height:1.7; color: var(--text-secondary); max-width:760px; }
+
+/* ============ RATINGS & REVIEWS ============ */
+.ratings-summary{ display:flex; gap:48px; flex-wrap:wrap; padding-bottom:24px; margin-bottom:20px; border-bottom:1px solid var(--border); }
+.ratings-big{ text-align:center; flex-shrink:0; }
+.ratings-big .big-num{ font-size:48px; font-weight:400; line-height:1; }
+.stars{ display:flex; align-items:center; gap:1px; }
+.stars svg{ width:14px; height:14px; fill: var(--star); stroke:none; }
+.stars.empty svg{ fill: var(--border-strong); }
+.ratings-big .stars{ justify-content:center; margin:6px 0; }
+.ratings-big .stars svg{ width:16px; height:16px; }
+.ratings-big .rev-count{ font-size:12px; color:var(--text-tertiary); }
+
+.ratings-bars{ flex:1; min-width:220px; max-width:380px; display:flex; flex-direction:column; gap:7px; justify-content:center; }
+.bar-row{ display:flex; align-items:center; gap:10px; font-size:12px; color:var(--text-tertiary); }
+.bar-row .bar{ flex:1; height:6px; background:var(--border); border-radius:4px; overflow:hidden; }
+.bar-row .bar-fill{ height:100%; background:var(--star); border-radius:4px; }
+
+.reviews-list{ display:flex; flex-direction:column; gap:22px; }
+.review-header{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.review-avatar{
+  width:34px; height:34px; border-radius:50%; background: linear-gradient(135deg,#5b6cff,#7c3aed);
+  color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.review-name{ font-size:13px; font-weight:600; }
+.review-meta{ display:flex; align-items:center; gap:8px; margin-top:1px; }
+.review-meta .stars svg{ width:11px; height:11px; }
+.review-date{ font-size:11.5px; color:var(--text-tertiary); }
+.review-text{ font-size:13.5px; line-height:1.6; color:var(--text-secondary); margin:0 0 6px 44px; max-width:680px; }
+.review-helpful{ font-size:12px; color:var(--text-tertiary); margin-left:44px; }
+
+/* ============ GRIDS ============ */
+.support-grid, .info-grid-2col{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px 32px; }
+.info-label{ font-size:12px; color:var(--text-tertiary); margin-bottom:3px; }
+.info-value{ font-size:13.5px; color:var(--text-primary); font-weight:500; }
+
+/* ============ TOAST ============ */
+.toast{
+  position:fixed; bottom:24px; left:50%; transform: translateX(-50%) translateY(20px);
+  background:#323232; color:#fff; padding: 12px 22px; border-radius: 8px; font-size:14px;
+  opacity:0; pointer-events:none; transition: opacity .2s ease, transform .2s ease; z-index: 300; box-shadow: var(--shadow-hover);
+}
+.toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+/* ============ FOOTER ============ */
+.foot-links{ display:flex; flex-wrap:wrap; align-items:center; gap:20px; padding: 32px 4px; border-top: 1px solid var(--border); margin-top: 16px; font-size:13px; color: var(--text-tertiary); }
+.foot-links span:first-child{ font-weight:700; color: var(--text-secondary); }
+.foot-links a{ color: var(--text-tertiary); }
+.foot-links a:hover{ color: var(--text-primary); }
+.foot-copy{ margin-left:auto; }
+
+/* ============================================================ RESPONSIVE ============================================================ */
+@media (max-width: 1024px){
+  :root{ --sidebar-w: 76px; }
+  .side-link span{ display:none; }
+  .side-link{ justify-content:center; padding:0; gap:0; }
+}
+@media (max-width: 720px){
+  :root{ --header-h: 56px; }
+  .brand-name{ display:none; }
+  .hide-mobile{ display:none; }
+  .topbar{ padding: 0 8px; gap:8px; }
+  .search-wrap{ height:40px; }
+  .sidebar{ width: 280px; transform: translateX(-100%); box-shadow: var(--shadow-hover); z-index: 96; }
+  .sidebar.open{ transform: translateX(0); }
+  .sidebar .side-link span{ display:flex; }
+  .sidebar .side-link{ justify-content:flex-start; padding:0 20px; gap:22px; }
+  .main-content{ margin-left:0; padding: 16px 12px 48px; }
+  .app-hero{ grid-template-columns:1fr; }
+  .hero-icon{ width:88px; height:88px; }
+  .hero-info h1{ font-size:24px; }
+  .hero-stats{ max-width:100%; }
+  .shots-carousel img{ height:220px; }
+  .carousel-arrow{ display:none; }
+  .ratings-summary{ gap:24px; }
+  .support-grid, .info-grid-2col{ grid-template-columns:1fr; }
+  .foot-copy{ margin-left:0; width:100%; order:99; }
+}
+@media (prefers-reduced-motion: reduce){ *{ transition-duration:.01ms !important; } }
+
+/* Play Store-inspired polish */
+.topbar{
+  box-shadow:0 1px 2px rgba(60,64,67,.10);
+  border-bottom:1px solid #e1e3e6;
+}
+.brand-name{font-weight:600;color:#202124;}
+.search-wrap{max-width:720px;}
+.main-content{max-width:1100px;}
+.app-hero{
+  background:#fff;
+  border:1px solid #e1e3e6;
+  border-radius:20px;
+  padding:28px;
+  box-shadow:0 1px 3px rgba(60,64,67,.08);
+}
+.section{
+  background:#fff;
+  border:1px solid #e1e3e6;
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 1px 2px rgba(60,64,67,.05);
+}
+.section h2{font-size:20px;}
+.hero-info h1{font-size:34px;}
+.hero-dev{color:#1a73e8;}
+.btn-lg{box-shadow:0 1px 2px rgba(60,64,67,.18);}
+.btn-lg:hover{transform:translateY(-1px);}
+.shots-carousel img{
+  border:1px solid #e1e3e6;
+  box-shadow:0 2px 8px rgba(60,64,67,.12);
+}
+.foot-links{
+  background:#fff;
+  border:1px solid #e1e3e6;
+  border-radius:16px;
+  padding:24px;
+}
+@media(max-width:720px){
+  .app-hero,.section{border-radius:14px;padding:18px;}
+  .hero-info h1{font-size:27px;}
+}
+
+</style>
+
+<style id="vdesi-light-theme">
+:root{
+  --bg:#f8f9fa;
+  --bg-subtle:#f1f3f4;
+  --surface:#ffffff;
+  --border:#e1e3e6;
+  --border-strong:#c9cdd2;
+  --text-primary:#202124;
+  --text-secondary:#5f6368;
+  --text-tertiary:#80868b;
+  --accent:#1a73e8;
+  --accent-dark:#185abc;
+  --accent-wash:#e8f0fe;
+  --install-green:#01875f;
+  --install-green-dark:#016b4b;
+  --star:#f9ab00;
+  --shadow-1:0 1px 2px rgba(60,64,67,.12);
+  --shadow-2:0 1px 3px rgba(60,64,67,.15),0 4px 12px rgba(60,64,67,.08);
+  --shadow-hover:0 2px 8px rgba(60,64,67,.18),0 8px 20px rgba(60,64,67,.10);
+}
+body{background:var(--bg);color:var(--text-primary);}
+.topbar,.sidebar{background:var(--surface);}
+.search-wrap{background:var(--bg-subtle);border:1px solid transparent;}
+.search-wrap:focus-within{background:var(--surface);border-color:#dadce0;box-shadow:0 1px 6px rgba(60,64,67,.18);}
+.icon-btn:hover,.brand:hover,.side-link:hover,.icon-btn-outline:hover{background:#f1f3f4;}
+.side-link.active{background:var(--accent-wash);color:var(--accent-dark);}
+.hero-icon{box-shadow:var(--shadow-2);}
+.chip-tag{background:#fff;border-color:#dadce0;}
+.btn-install{background:#01875f;color:#fff;}
+.btn-install:hover{background:var(--install-green-dark);box-shadow:var(--shadow-1);}
+.icon-btn-outline{background:#fff;border-color:#dadce0;}
+.carousel-arrow{background:#fff;border-color:#dadce0;}
+.bar-row .bar{background:#e8eaed;}
+.review-avatar{background:linear-gradient(135deg,#1a73e8,#7b61ff);}
+.toast{background:#323232;}
+@media (max-width:720px){
+  .main-content{padding-top:18px;}
+}
+</style>
+
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <a class="brand" href="#">
+      <svg width="32" height="32" viewBox="0 0 40 40">
+        <circle cx="20" cy="20" r="18" fill="url(#g1)"/>
+        <circle cx="20" cy="20" r="7" fill="#fff"/>
+        <circle cx="20" cy="7" r="3.2" fill="#fff"/>
+        <circle cx="31.2" cy="26.5" r="3.2" fill="#fff" fill-opacity=".85"/>
+        <circle cx="8.8" cy="26.5" r="3.2" fill="#fff" fill-opacity=".85"/>
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CFF"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs>
+      </svg>
+      <span class="brand-name">Vdesi Chat</span>
+    </a>
+  </div>
+  <div class="topbar-center">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+      <input type="text" id="searchInput" placeholder="Search apps &amp; games" autocomplete="off" />
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn hide-mobile" aria-label="Help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 114.31 1.74c-.6.62-1.31 1.1-1.31 2.26M12 17h.01"/></svg></button>
+    <button class="icon-btn hide-mobile" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3.4a2 2 0 010-4h.09A1.65 1.65 0 005 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.14.32.22.66.24 1H20a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+    <button class="avatar-btn" aria-label="Account">H</button>
+  </div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav">
+      <ul class="side-group">
+        <li><a href="#" class="side-link active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg><span>Home</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Apps</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="5"/><path d="M7 10v4M5 12h4M16 11h.01M18.5 13h.01"/></svg><span>Games</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h5M2 15h5M17 9h5M17 15h5"/></svg><span>Movies</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Books</span></a></li>
+      </ul>
+      <div class="side-divider"></div>
+      <ul class="side-group">
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg><span>For You</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span>Top Charts</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3L22 9l-5 5.1L18.2 22 12 18.6 5.8 22 7 14.1 2 9l7.1-.7z"/></svg><span>New Releases</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M3 8l4 3 5-7 5 7 4-3-2 11H5z"/></svg><span>Premium</span></a></li>
+      </ul>
+      <div class="side-divider"></div>
+      <ul class="side-group side-group--footer">
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg><span>Settings</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 17h.01"/></svg><span>Help</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6z"/></svg><span>Privacy</span></a></li>
+        <li><a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg><span>Terms</span></a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <nav class="breadcrumb">Apps <span>›</span> Productivity <span>›</span> Vdesi Chat</nav>
+
+    <section class="app-hero">
+      <img class="hero-icon" id="heroIcon" alt="Vdesi Chat icon" />
+      <div class="hero-info">
+        <h1>Vdesi Chat</h1>
+        <a class="hero-dev" href="#">Driftwood Digital</a>
+        <div class="hero-tags">
+          <span class="chip-tag">Productivity</span>
+          <span class="chip-tag">Contains ads</span>
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-value">4.7 <svg viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg></div>
+            <div class="stat-label">128K reviews</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">Everyone</div>
+            <div class="stat-label">Age rating</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">1M+</div>
+            <div class="stat-label">Downloads</div>
+          </div>
+        </div>
+        <div class="hero-cta">
+          <button class="btn btn-install btn-lg" id="installBtn">Install</button>
+          <button class="icon-btn-outline" id="wishlistBtn" aria-label="Add to wishlist">
+            <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Screenshots</h2>
+      <div class="carousel-wrap">
+        <button class="carousel-arrow left" id="shotsLeft" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="carousel shots-carousel" id="shotsCarousel"></div>
+        <button class="carousel-arrow right" id="shotsRight" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>About this app</h2>
+      <p class="about-text" id="aboutText">Vdesi Chat is a calm, distraction-free space for capturing thoughts the moment they happen. Quick-capture notes, voice-to-text jotting, and gentle daily prompts help you build a journaling habit without the pressure of a blank page. Organize entries into folders, tag them for later, and search everything instantly — even offline. A soft focus mode dims everything except the page you're writing on, and end-to-end encrypted backup means your private thoughts stay private. Whether it's a morning journal, meeting notes, or a fleeting idea on the bus, Vdesi Chat is built to get out of your way and let you write.</p>
+      <button class="read-more-btn" id="readMoreBtn">Read more</button>
+    </section>
+
+    <section class="section">
+      <h2>What's new</h2>
+      <p class="updated-label">Updated on Aug 10, 2026</p>
+      <p class="body-text">Added a redesigned focus mode with adjustable dim levels, faster full-text search across large note collections, and a handful of bug fixes around sync reliability on flaky connections.</p>
+    </section>
+
+    <section class="section">
+      <h2>Ratings and reviews</h2>
+      <div class="ratings-summary">
+        <div class="ratings-big">
+          <div class="big-num">4.7</div>
+          <div class="stars" id="bigStars"></div>
+          <div class="rev-count">128,430 reviews</div>
+        </div>
+        <div class="ratings-bars" id="ratingBars"></div>
+      </div>
+      <div class="reviews-list" id="reviewsList"></div>
+    </section>
+
+    <section class="section">
+      <h2>App support</h2>
+      <div class="support-grid">
+        <div><div class="info-label">Email</div><div class="info-value">support@vdesichat.app</div></div>
+        <div><div class="info-label">Website</div><div class="info-value">vdesichat.app</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>App information</h2>
+      <div class="info-grid-2col">
+        <div><div class="info-label">Version</div><div class="info-value">3.4.1</div></div>
+        <div><div class="info-label">Updated</div><div class="info-value">Aug 10, 2026</div></div>
+        <div><div class="info-label">Size</div><div class="info-value">28 MB</div></div>
+        <div><div class="info-label">Downloads</div><div class="info-value">1,000,000+</div></div>
+        <div><div class="info-label">Requires</div><div class="info-value">Android 8.0 and up</div></div>
+        <div><div class="info-label">Offered by</div><div class="info-value">Driftwood Digital</div></div>
+      </div>
+    </section>
+
+    <footer class="foot-links">
+      <span>Vdesi Chat</span>
+      <a href="#">Settings</a><a href="#">Help</a><a href="#">Privacy</a><a href="#">Terms</a>
+      <span class="foot-copy">© 2026 Vdesi Chat.</span>
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!--
+  ============================
+  YOUR APP FILES
+  ============================
+  Put these files beside this index.html:
+    VdesiChat.apk
+
+  Put these image files inside the assets folder:
+    assets/app-icon.png
+    assets/screenshot-1.png
+    assets/screenshot-2.png
+    assets/screenshot-3.png
+    assets/screenshot-4.png
+
+  Then the Install button downloads VdesiChat.apk.
+-->
+<script>
+function makeIcon(seed, colorA, colorB, glyph) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+    <defs><linearGradient id="g${seed}" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="${colorA}"/><stop offset="1" stop-color="${colorB}"/></linearGradient></defs>
+    <rect width="96" height="96" rx="22" fill="url(#g${seed})"/>
+    <text x="48" y="62" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#fff" text-anchor="middle" opacity="0.95">${glyph}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+function makeScreenshot(seed, colorA, colorB, label) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 500">
+    <defs><linearGradient id="s${seed}" x1="0" y1="0" x2="280" y2="500" gradientUnits="userSpaceOnUse"><stop stop-color="${colorA}"/><stop offset="1" stop-color="${colorB}"/></linearGradient></defs>
+    <rect width="280" height="500" fill="url(#s${seed})"/>
+    <rect x="20" y="40" width="240" height="16" rx="8" fill="#ffffff" opacity="0.85"/>
+    <rect x="20" y="70" width="160" height="12" rx="6" fill="#ffffff" opacity="0.5"/>
+    <rect x="20" y="140" width="240" height="120" rx="14" fill="#ffffff" opacity="0.18"/>
+    <rect x="20" y="280" width="240" height="80" rx="14" fill="#ffffff" opacity="0.18"/>
+    <rect x="20" y="380" width="240" height="80" rx="14" fill="#ffffff" opacity="0.18"/>
+    <text x="140" y="480" font-family="Arial, sans-serif" font-size="13" fill="#ffffff" opacity="0.7" text-anchor="middle">${label}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+
+const COLOR_A = "#FF7E5F", COLOR_B = "#FEB47B";
+const SHOT_LABELS = ["Quick capture", "Folders & tags", "Focus mode", "Instant search", "Daily prompts"];
+const STAR_PATH = 'M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z';
+function starSVG(filled){ return `<svg viewBox="0 0 24 24" class="${filled?'':'empty'}"><path d="${STAR_PATH}"/></svg>`; }
+function starsHTML(n){ let h=''; for(let i=1;i<=5;i++) h+=starSVG(i<=n); return h; }
+
+const REVIEWS = [
+  { name:"Priya S.", rating:5, date:"2 days ago", text:"Genuinely the first journaling app I've stuck with for more than a week. Focus mode is a game changer for late-night writing.", helpful:42 },
+  { name:"Marcus O.", rating:5, date:"1 week ago", text:"Fast, clean, and the offline search actually works instantly even with a few hundred notes. Exactly what I wanted.", helpful:27 },
+  { name:"Aiko T.", rating:4, date:"3 weeks ago", text:"Love the daily prompts. Only wish there was a tablet-optimized layout — works great on phone though.", helpful:15 }
+];
+const RATING_DIST = [ [5,78], [4,14], [3,5], [2,2], [1,1] ];
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("heroIcon").src = "assets/app-icon.png";
+
+  const shots = document.getElementById("shotsCarousel");
+  const SCREENSHOTS = [
+    "assets/screenshot-1.png",
+    "assets/screenshot-2.png",
+    "assets/screenshot-3.png",
+    "assets/screenshot-4.png"
+  ];
+  shots.innerHTML = SCREENSHOTS.map((src,i) =>
+    `<img src="${src}" alt="App screenshot ${i + 1}" loading="lazy" onerror="this.style.display='none'" />`
+  ).join("");
+
+  document.getElementById("bigStars").innerHTML = starsHTML(5);
+
+  document.getElementById("ratingBars").innerHTML = RATING_DIST.map(([stars,pct]) => `
+    <div class="bar-row"><span>${stars}</span><div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div></div>
+  `).join("");
+
+  document.getElementById("reviewsList").innerHTML = REVIEWS.map(r => `
+    <div class="review-card">
+      <div class="review-header">
+        <div class="review-avatar">${r.name.charAt(0)}</div>
+        <div>
+          <div class="review-name">${r.name}</div>
+          <div class="review-meta"><span class="stars">${starsHTML(r.rating)}</span><span class="review-date">${r.date}</span></div>
+        </div>
+      </div>
+      <p class="review-text">${r.text}</p>
+      <div class="review-helpful">👍 ${r.helpful} found this helpful</div>
+    </div>
+  `).join("");
+
+  // Mobile sidebar
+  const sidebar = document.getElementById("sidebar");
+  const scrim = document.getElementById("scrim");
+  document.getElementById("hamburgerBtn").addEventListener("click", () => {
+    const open = !sidebar.classList.contains("open");
+    sidebar.classList.toggle("open", open);
+    scrim.classList.toggle("show", open);
+  });
+  scrim.addEventListener("click", () => { sidebar.classList.remove("open"); scrim.classList.remove("show"); });
+  document.querySelectorAll(".side-link").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.querySelectorAll(".side-link").forEach(l => l.classList.remove("active"));
+      link.classList.add("active");
+      sidebar.classList.remove("open"); scrim.classList.remove("show");
+    });
+  });
+
+  // Screenshots carousel arrows
+  document.getElementById("shotsLeft").addEventListener("click", () => shots.scrollBy({left:-360, behavior:"smooth"}));
+  document.getElementById("shotsRight").addEventListener("click", () => shots.scrollBy({left:360, behavior:"smooth"}));
+
+  // Read more toggle
+  const aboutText = document.getElementById("aboutText");
+  const readMoreBtn = document.getElementById("readMoreBtn");
+  readMoreBtn.addEventListener("click", () => {
+    const expanded = aboutText.classList.toggle("expanded");
+    readMoreBtn.textContent = expanded ? "Show less" : "Read more";
+  });
+
+  // Install / wishlist buttons
+  document.getElementById("installBtn").addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.href = "VdesiChat.apk";
+    link.download = "VdesiChat.apk";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
+  document.getElementById("wishlistBtn").addEventListener("click", () => showToast("Added to wishlist"));
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 720) { sidebar.classList.remove("open"); scrim.classList.remove("show"); }
+  });
+});
+</script>
+</body>
+</html>
